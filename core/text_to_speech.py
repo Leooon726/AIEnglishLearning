@@ -1,14 +1,17 @@
 import os
 import azure.cognitiveservices.speech as speechsdk
 from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 class TextToSpeech:
-    def __init__(self):
-        load_dotenv()
+    def __init__(self, play_audio=False):
         speech_key = os.getenv('AZURE_SPEECH_KEY')
         speech_region = 'eastasia'
         self.speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=speech_region)
-        self.audio_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=True)
+        if play_audio:
+            self.audio_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=True)
+        else:
+            self.audio_config = speechsdk.audio.PullAudioOutputStream()
         self.speech_config.speech_synthesis_voice_name = 'en-US-EmmaMultilingualNeural'
         self.speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config, audio_config=self.audio_config)
 
@@ -36,5 +39,5 @@ class TextToSpeech:
 if __name__ == "__main__":
     tts = TextToSpeech()
     text_input = input("Enter some text that you want to speak > ")
-    tts.synthesize_speech(text_input, "output_audio.wav")
+    tts.synthesize_speech(text_input, "D:\Study\AIAgent\AIEnglishLearning\core\output_audio.wav")
     

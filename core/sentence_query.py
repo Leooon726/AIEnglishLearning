@@ -1,38 +1,13 @@
-import os
+from .ark_model_completion import ArkModelCompletion
 import logging
-from volcenginesdkarkruntime import Ark
-from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-class ArkModelCompletion:
-    def __init__(self):
-        load_dotenv()
-        api_key = os.getenv('ARK_API_KEY')
-        self.client = Ark(
-            api_key=api_key,
-            base_url="https://ark.cn-beijing.volces.com/api/v3"
-        )
-        logging.info("ArkModelCompletion initialized with API key.")
-
-    def query_model(self, system_content, user_content):
-        logging.info("Querying model with system content and user content.")
-        # Non-streaming request
-        completion = self.client.chat.completions.create(
-            model="ep-20240930222858-7mzmx",
-            messages=[
-                {"role": "system", "content": system_content},
-                {"role": "user", "content": user_content},
-            ],
-        )
-        response = completion.choices[0].message.content
-        logging.info("Model query completed.")
-        return response
-
 class ParagraphGenerator:
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, model=None, use_reflection=True):
+        self.model = model if model else ArkModelCompletion()
+        self.use_reflection = use_reflection
         logging.info("ParagraphGenerator initialized.")
 
     def get_target_words_from_target_words_and_meanings(self, target_words_and_meanings):
@@ -44,10 +19,13 @@ class ParagraphGenerator:
         logging.info(f"Generating paragraph with target words: {target_words}")
         original_english_paragraph = self.generate_original_paragraph(target_words, target_words_and_meanings)
 
-        reflection_response = self.reflect_on_paragraph(original_english_paragraph, target_words)
+        if self.use_reflection:
+            reflection_response = self.reflect_on_paragraph(original_english_paragraph, target_words)
+        else:
+            reflection_response = original_english_paragraph
         return reflection_response, self.translate(reflection_response, target_words)
 
-    def generate_original_paragraph(self, target_words, words_and_meanings):
+    def generate_original_paragraph(self, target_words, target_words_and_meanings):
         logging.info("Generating original paragraph.")
         system_content = (
             "你是一个美国作家，擅长根据给定的单词列表，写出合理优美且可以作为英语学习材料的文段。"
@@ -103,9 +81,9 @@ class ParagraphGenerator:
 
         reflect_user_content = f"目标单词：{', '.join(target_words)} \n原始文段： {original_paragraph}"
         result = self.model.query_model(reflection_system_content, reflect_user_content)
-        logging.info("Reflection completed.")
-        # only return the part after [更正]
-        return result.split("[更正]：")[1].strip() if "[更正]：" in result else result
+        reflection_part, improved_part = result.split("[更正]：") if "[更正]：" in result else (result, "")
+        logging.info("Reflection completed: %s", reflection_part)
+        return improved_part
 
     def translate(self, paragraph, target_words):
         logging.info("Translating paragraph to Chinese.")
