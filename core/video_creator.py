@@ -68,7 +68,7 @@ if __name__ == "__main__":
         'key_frame_2': 'D:\\Study\\AIAgent\\AIEnglishLearning\\output\\1_key_frame_2.jpeg',
         'key_frame_3': 'D:\\Study\\AIAgent\\AIEnglishLearning\\output\\1_key_frame_3.jpeg',
         'output_path': 'D:\\Study\\AIAgent\\AIEnglishLearning\\output\\1_video.mp4',
-        'bgm_path': 'D:\Study\AIAgent\AIEnglishLearning\output\scott-buckley-reverie(chosic.com).mp3'
+        'bgm_path': 'D:\Study\AIAgent\AIEnglishLearning\static_materials\scott-buckley-reverie(chosic.com).mp3'
     }
     video_creator = VideoCreator(video_info_dict)
     video_path = video_creator.create_video()

@@ -19,6 +19,14 @@ class ClusterReader:
         else:
             raise StopIteration
 
+    def get_group_by_label(self, label):
+        """Get the group corresponding to the given cluster label."""
+        if label in self.cluster_labels:
+            group = self.grouped.get_group(label)[['index', 'word', 'meaning']]
+            return label, group  # Return the label along with the group
+        else:
+            raise ValueError(f"Label '{label}' not found in cluster labels.")
+
 # Usage
 if __name__ == "__main__":
     cluster_reader = ClusterReader('D:\Study\AIAgent\AIEnglishLearning\output\CET4_700_clustered_word_list.csv')

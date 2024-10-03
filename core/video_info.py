@@ -2,10 +2,14 @@ import csv
 from datetime import datetime
 
 class VideoInfoCollector:
-    def __init__(self):
+    def __init__(self, csv_file_path=None):
         # Get the current time for the file name
-        self.current_time = str(datetime.now().strftime("%m%d%H%M%S"))
-        self.csv_file_path = f"D:\\Study\\AIAgent\\AIEnglishLearning\\output\\info_for_video_generation_{self.current_time}.csv"
+        if csv_file_path is None:
+            self.current_time = str(datetime.now().strftime("%m%d%H%M%S"))
+            self.csv_file_path = f"D:\\Study\\AIAgent\\AIEnglishLearning\\output\\info_for_video_generation_{self.current_time}.csv"
+        else:
+            self.csv_file_path = csv_file_path
+        print('VideoInfoCollector csv_file_path:', self.csv_file_path)
         self.header = ['index', 'image_prompt', 'target_words_and_meanings', 'clean_paragraph', 'bold_words', 'clean_translation', 'bold_word_meanings', 'audio_path']
         
         # Initialize the CSV file with header
