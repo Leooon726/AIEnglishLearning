@@ -19,14 +19,15 @@ class DrawChineseText:
 
     def split_text_to_words(self, text):
         '''
-        Splits the input text into a list of Chinese characters, English words, spaces, and punctuation.
+        Splits the input text into a list of Chinese characters, English words, spaces, and punctuation,
+        without missing any characters from the original string.
         
         Example:
         input: "一二三one two."
         output: ['一', '二', '三', 'one', ' ', 'two', '.']
         '''
-        # Regular expression to match Chinese characters, sequences of English letters, spaces, and punctuation marks
-        words = re.findall(r'[\u4e00-\u9fff]|[a-zA-Z]+|\s|[.,!?;：；。！？、，]', text)
+        # Match Chinese characters, sequences of English letters, numbers, spaces, punctuation, or any other character
+        words = re.findall(r'[\u4e00-\u9fff]|[a-zA-Z0-9]+|\s|.', text)
         return words
 
     @staticmethod

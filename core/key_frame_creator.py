@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
-from .draw_text import DrawChineseText, DrawEnglishText
+from .image_creator import ImageCreator
 
 class KeyFrameCreator:
     def __init__(self, video_info_dict):
@@ -42,64 +42,141 @@ class KeyFrameCreator:
         self.draw_rectangle(image, (0, 1250), self.image_width, 1000)  # Use instance's image_width
 
     def create_key_frame_first_page(self):
-        image = Image.new('RGB', (self.image_width, self.image_height), color=(0, 0, 0))
-        # Use the common drawing method for the header, illustration, and rectangle
-        self.draw_common_part(image)
-        # Add the text.
-        highlighted_words = self.video_info_dict['bold_words']
-        draw = ImageDraw.Draw(image)
-        text_position = (70, 1270)
-        text_box_width = self.image_width - 140
-        line_height = (draw.textbbox((0, 0), "A", font=self.font)[3] - draw.textbbox((0, 0), "A", font=self.font)[1]) * 1.4
-        draw_english_text = DrawEnglishText(draw, self.font, text_position, 
-                                        fill="black", 
-                                        max_width=text_box_width, 
-                                        line_height=line_height, 
-                                        highlighted_words=highlighted_words)
-        draw_english_text.draw_justified_text(self.video_info_dict['clean_paragraph'])
-        # Return the created image path.
         output_image_name = f"{self.video_info_dict['index']}_key_frame_1"
         image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
-        image.save(image_path)
+        draw_config = {
+                'background_color': 'white',
+                'image_size': (self.image_width, self.image_height),
+                'output_path': image_path,
+                'drawing_operations': [
+                    {
+                        'type': 'draw_image',
+                        'image_path': self.header_image_path,
+                        'position': (0, 0),
+                        'size': (self.image_width, -1)
+                    },
+                    {
+                        'type': 'draw_image',
+                        'image_path': self.illustration_image_path,
+                        'position': (0, 250),
+                        'size': (self.image_width, -1)
+                    },
+                    {
+                        'type': 'draw_shape',
+                        'shape': 'rectangle',
+                        'position': (0, 1250),
+                        'size': (1080, 1000),
+                        'fill': 'white'
+                    },
+                    {
+                        'type': 'draw_text',
+                        'text': self.video_info_dict['clean_paragraph'],
+                        'position': (0, 1270),
+                        'font': 'msyhbd',
+                        'font_size': 50,
+                        'fill': 'black',
+                        'text_box_width': self.image_width,
+                        'line_height_ratio': 1.4,
+                        'padding': 70,
+                        'highlighted_words': self.video_info_dict['bold_words']
+                    }
+                ]
+            }
+        image_creator = ImageCreator(draw_config)
+        image_path = image_creator.draw()
         return image_path
     
     def create_key_frame_second_page(self):
-        image = Image.new('RGB', (self.image_width, self.image_height), color=(255, 255, 255))
-        # Use the common drawing method for the header, illustration, and rectangle
-        self.draw_common_part(image)
-        # add the text.
-        highlighted_words = self.video_info_dict['bold_word_meanings']
-        draw = ImageDraw.Draw(image)
-        text_position = (70, 1270)
-        text_box_width = self.image_width - 140
-        line_height = (draw.textbbox((0, 0), "汉", font=self.font)[3] - draw.textbbox((0, 0), "汉", font=self.font)[1])*1.4
-        chinese_text_drawer = DrawChineseText(self.video_info_dict['clean_translation'], self.font, draw, text_box_width, line_height=line_height, position=text_position, highlighted_words=highlighted_words)
-        chinese_text_drawer.draw_text()
-        # return the created image path.
         output_image_name = f"{self.video_info_dict['index']}_key_frame_2"
         image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
-        image.save(image_path)
+        draw_config = {
+                'background_color': 'white',
+                'image_size': (self.image_width, self.image_height),
+                'output_path': image_path,
+                'drawing_operations': [
+                    {
+                        'type': 'draw_image',
+                        'image_path': self.header_image_path,
+                        'position': (0, 0),
+                        'size': (self.image_width, -1)
+                    },
+                    {
+                        'type': 'draw_image',
+                        'image_path': self.illustration_image_path,
+                        'position': (0, 250),
+                        'size': (self.image_width, -1)
+                    },
+                    {
+                        'type': 'draw_shape',
+                        'shape': 'rectangle',
+                        'position': (0, 1250),
+                        'size': (1080, 1000),
+                        'fill': 'white'
+                    },
+                    {
+                        'type': 'draw_text',
+                        'text': self.video_info_dict['clean_translation'],
+                        'position': (0, 1270),
+                        'font': 'msyhbd',
+                        'font_size': 50,
+                        'fill': 'black',
+                        'text_box_width': self.image_width,
+                        'line_height_ratio': 1.4,
+                        'padding': 70,
+                        'highlighted_words': self.video_info_dict['bold_word_meanings']
+                    }
+                ]
+            }
+        image_creator = ImageCreator(draw_config)
+        image_path = image_creator.draw()
         return image_path
     
     def create_key_frame_third_page(self):
-        image = Image.new('RGB', (self.image_width, self.image_height), color=(255, 255, 255))
-        # Use the common drawing method for the header, illustration, and rectangle
-        self.draw_common_part(image)
-
-        # Convert the list of tuples to a multiple line string.
+        output_image_name = f"{self.video_info_dict['index']}_key_frame_3"
+        image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
         target_words_and_meanings = self.video_info_dict['target_words_and_meanings']
         multiple_line_string = "\n".join([f"{word}   {meaning}" for word, meaning in target_words_and_meanings])
         highlighted_words = [word for word, meaning in target_words_and_meanings]
-        draw = ImageDraw.Draw(image)
-        text_position = (70, 1270)
-        text_box_width = self.image_width - 140
-        line_height = (draw.textbbox((0, 0), "汉", font=self.font)[3] - draw.textbbox((0, 0), "汉", font=self.font)[1])*1.4
-        chinese_text_drawer = DrawChineseText(multiple_line_string, self.font, draw, text_box_width, line_height=line_height, position=text_position, highlighted_words=highlighted_words)
-        chinese_text_drawer.draw_text()
-        # return the created image path.
-        output_image_name = f"{self.video_info_dict['index']}_key_frame_3"
-        image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
-        image.save(image_path)
+        draw_config = {
+                'background_color': 'white',
+                'image_size': (self.image_width, self.image_height),
+                'output_path': image_path,
+                'drawing_operations': [
+                    {
+                        'type': 'draw_image',
+                        'image_path': self.header_image_path,
+                        'position': (0, 0),
+                        'size': (self.image_width, -1)
+                    },
+                    {
+                        'type': 'draw_image',
+                        'image_path': self.illustration_image_path,
+                        'position': (0, 250),
+                        'size': (self.image_width, -1)
+                    },
+                    {
+                        'type': 'draw_shape',
+                        'shape': 'rectangle',
+                        'position': (0, 1250),
+                        'size': (1080, 1000),
+                        'fill': 'white'
+                    },
+                    {
+                        'type': 'draw_text',
+                        'text': multiple_line_string,
+                        'position': (0, 1270),
+                        'font': 'msyhbd',
+                        'font_size': 50,
+                        'fill': 'black',
+                        'text_box_width': self.image_width,
+                        'line_height_ratio': 1.4,
+                        'padding': 70,
+                        'highlighted_words': highlighted_words
+                    }
+                ]
+            }
+        image_creator = ImageCreator(draw_config)
+        image_path = image_creator.draw()
         return image_path
 
 # Example usage
@@ -121,7 +198,7 @@ if __name__ == "__main__":
     key_frame_creator = KeyFrameCreator(video_info_dict)
     path = key_frame_creator.create_key_frame_first_page()
     print(path)
-    # path = key_frame_creator.create_key_frame_second_page()
-    # print(path)
-    # path = key_frame_creator.create_key_frame_third_page()
-    # print(path)
+    path = key_frame_creator.create_key_frame_second_page()
+    print(path)
+    path = key_frame_creator.create_key_frame_third_page()
+    print(path)
