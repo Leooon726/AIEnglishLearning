@@ -139,24 +139,41 @@ class DrawChineseText:
             all_lines.append(lines_of_cur_paragraph)
         return all_lines
 
-    def draw_text(self):
+    def draw_text(self, alignment='justify'):  # Added alignment parameter
         x, y = self.position
         
         for render_dict in self.all_lines:
             line_list = render_dict['list_of_words']
             should_be_highlighted = render_dict['should_be_highlighted']
             for i, line in enumerate(line_list):
-                for j, word in enumerate(line):
-                    color = self.fill
-                    if should_be_highlighted[i][j] == 1:
-                        color = self.highlight_color
-                    self.draw.text((x, y), word, font=self.font, fill=color)
-                    word_bbox = self.draw.textbbox((0, 0), word, font=self.font)
-                    word_width = word_bbox[2] - word_bbox[0]
-                    x += word_width
-            
+                if alignment == 'justify' and i < len(line_list) - 1:  # Justify if not the last line
+                    self.draw_a_line_justified(line, y, should_be_highlighted[i])
+                else:  # Default to left alignment
+                    self.draw_a_line_left_aligned(line, y, should_be_highlighted[i])
                 y += self.line_height
-                x = self.position[0]  # Reset x position for the next line
+
+    def draw_a_line_justified(self, line, y_offset, should_be_highlighted):
+        x = self.position[0]
+        total_width = sum(self.draw.textbbox((0, 0), word, font=self.font)[2] for word in line)
+        space_width = (self.width - total_width) / (len(line) - 1) if len(line) > 1 else 0
+        
+        for j, word in enumerate(line):
+            color = self.fill
+            if should_be_highlighted[j] == 1:
+                color = self.highlight_color
+            self.draw.text((x, y_offset), word, font=self.font, fill=color)
+            word_width = self.draw.textbbox((0, 0), word, font=self.font)[2]
+            x += word_width + space_width
+
+    def draw_a_line_left_aligned(self, line, y_offset, should_be_highlighted):
+        x = self.position[0]
+        for j, word in enumerate(line):
+            color = self.fill
+            if should_be_highlighted[j] == 1:
+                color = self.highlight_color
+            self.draw.text((x, y_offset), word, font=self.font, fill=color)
+            word_width = self.draw.textbbox((0, 0), word, font=self.font)[2]
+            x += word_width
 
 class DrawEnglishText:
     def __init__(self, draw, font, position, fill, max_width, line_height, highlighted_words=None, highlight_color="red"):
@@ -316,7 +333,7 @@ def test_draw_chinese_text():
         line_height=66,
         position=(50, 1000),
         highlighted_words=highlighted_words)
-    n.draw_text()
+    n.draw_text(alignment='justify')
     image.save("D:\Study\AIAgent\AIEnglishLearning\output\\test\\test.jpeg")
 
 if __name__ == '__main__':
