@@ -74,10 +74,7 @@ class DrawChineseText:
 
         return result
 
-    def split_paragraph_to_lines(self, text):
-        words = self.split_text_to_words(text)
-        should_be_highlighted = self.mark_target_words(words, self.highlighted_words)
-
+    def split_paragraph_to_lines_by_width(self, words, should_be_highlighted):
         lines = []
         current_line = []
         sum_width = 0
@@ -103,22 +100,13 @@ class DrawChineseText:
                 # Add the word to the current line without adding extra space
                 current_line.append(word)
                 sum_width += width
-
         if current_line:
             lines.append(current_line)  # Add the remaining line as a list
-
-        # Adjust punctuation placement
-        for i, line in enumerate(lines):
-            if line and line[0] in '.,!?;：；。！？、，':
-                lines[i] = line[1:]
-                if i > 0:
-                    lines[i-1].append(line[0])  # Append punctuation to the previous line
 
         # also split |should_be_highlighted| into 2d list as the same structure of |lines|
         highlighted_lines = []
         current_highlighted = []
         highlight_index = 0
-
         for line in lines:
             current_highlighted = []
             for word in line:
@@ -128,6 +116,30 @@ class DrawChineseText:
                     current_highlighted.append(0)
                 highlight_index += 1
             highlighted_lines.append(current_highlighted)
+        return lines, highlighted_lines
+
+    def split_paragraph_to_lines(self, text):
+        words = self.split_text_to_words(text)
+        should_be_highlighted = self.mark_target_words(words, self.highlighted_words)
+        lines, highlighted_lines = self.split_paragraph_to_lines_by_width(words, should_be_highlighted)
+
+        # if spaces are in the beginning or end of a line, remove them, and adjust the index of should_be_highlighted
+        for i, (line, highlighted_line) in enumerate(zip(lines, highlighted_lines)):
+            if line and line[0] == ' ':
+                lines[i] = lines[i][1:]
+                highlighted_lines[i] = highlighted_lines[i][1:]
+            if line and line[-1] == ' ':
+                lines[i] = lines[i][:-1]
+                highlighted_lines[i] = highlighted_lines[i][:-1]
+
+        # Adjust punctuation placement, and the corresponding highlighted_lines
+        for i, (line, highlighted_line) in enumerate(zip(lines, highlighted_lines)):
+            if line and line[0] in '.,!?;：；。！？、，':
+                lines[i] = lines[i][1:]
+                highlighted_lines[i] = highlighted_lines[i][1:]
+                if i > 0:
+                    lines[i-1].append(line[0])
+                    highlighted_lines[i-1].append(highlighted_line[0])
 
         result = {'list_of_words': lines, 'should_be_highlighted': highlighted_lines}
         return result
@@ -320,18 +332,20 @@ def test_draw_english_text():
 def test_draw_chinese_text():
     from PIL import Image, ImageDraw, ImageFont
     import os
-    image = Image.new('RGB', (1080, 1920), color=(255, 255, 255))
+    image = Image.new('RGB', (1920, 1080), color=(255, 255, 255))
     draw = ImageDraw.Draw(image)
     font_path = os.path.join("c:\\Windows\\Fonts", "msyhbd.ttc")  # Fixed backslash for Windows path
-    font = ImageFont.truetype(font_path, size=50)
-    highlighted_words = ['日历', '图书馆', '萨拉喔', 'advertise', 'advertisement']  # Example highlighted words
+    font = ImageFont.truetype(font_path, size=40)
+    # highlighted_words = ['日历', '图书馆', 'the aar', 'advertise', 'advertisement']  # Example highlighted words
+    highlighted_words = ['日历', 'video', 'the Arctic Ocean', 'the Antarctic Ocean', 'advertisement']  # Example highlighted words
     n = DrawChineseText(
-        "萨拉查看了目录，看看她想要的书萨拉喔。advertisement, 然后她看了看advertise.日历，找一个合适的日子去图书馆advertisement。她确保图书馆的开放时间是有效的，这样她就不会浪费自己的时间。",
+        "There is a video about the animals in the Arctic Ocean and the Antarctic Ocean. It shows the unique lives of those creatures in the cold regions. It's very interesting to watch.",
+        # "萨拉查看了目录，看看她想要的书萨拉喔。advertisement, 然后the aar她看了看advertise.日历，找一个合适的日子去图书馆advertisement。她确保图书馆的开放时间是有效的，这样她就不会浪费自己的时间。",
         font=font,
         draw=draw,
-        width=1000,
+        width=680,
         line_height=66,
-        position=(50, 1000),
+        position=(1200, 280),
         highlighted_words=highlighted_words)
     n.draw_text(alignment='justify')
     image.save("D:\Study\AIAgent\AIEnglishLearning\output\\test\\test.jpeg")
@@ -339,4 +353,4 @@ def test_draw_chinese_text():
 if __name__ == '__main__':
     # test_draw_english_text()
     test_draw_chinese_text()
-    # print(DrawChineseText.mark_target_words(['一', '二', '三', 'one', ' ', 'two', '.'], ['二三', 'one']))
+    # print(DrawChineseText.merge_the_highlighted_words(['一', '二', '三', 'the', ' ', 'one', ' ', 'two', '.'], ['二三', 'the one']))

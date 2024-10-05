@@ -14,7 +14,7 @@ class WordListReader:
             index, word, meaning = parts
             self.words.append({
                 'index': index.strip(),
-                'word': word.strip(),
+                'word': word.strip().replace('_', ' '),  # Replace underscores with spaces
                 'meaning': meaning.strip()
             })
 
@@ -28,4 +28,4 @@ class WordListReader:
 if __name__ == "__main__":
     reader = WordListReader('D:\Study\AIAgent\AIEnglishLearning\CET4_700.txt')
     reader.read_file()
-    print(reader.get_all()[0])
+    print(reader.get_all()[116])

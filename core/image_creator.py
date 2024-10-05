@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
-from .draw_text import DrawChineseText
+from draw_text import DrawChineseText
 
 class ImageCreator:
     def __init__(self, draw_config):
