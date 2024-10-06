@@ -1,12 +1,14 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
-from .image_creator import ImageCreator
+from image_creator import ImageCreator
 
 class KeyFrameCreator:
     def __init__(self, video_info_dict):
         self.video_info_dict = video_info_dict
-        self.illustration_image_path = f"D:\Study\AIAgent\AIEnglishLearning\output\{self.video_info_dict['index']}.jpeg"
-        self.header_image_path = "D:\Study\AIAgent\AIEnglishLearning\static_materials\header.png"
+        if 'illustration_image_base_path' not in self.video_info_dict:   
+            self.video_info_dict['illustration_image_base_path'] = f"D:\Study\AIAgent\AIEnglishLearning\output"
+        if 'header_image_path' not in self.video_info_dict:
+            self.video_info_dict['header_image_path'] = "D:\Study\AIAgent\AIEnglishLearning\static_materials\header.png"
         self.image_width = 1080
         self.image_height = 1920
         font_path = os.path.join("c:\Windows\Fonts", "msyhbd.ttc")
@@ -42,115 +44,57 @@ class KeyFrameCreator:
         self.draw_rectangle(image, (0, 1250), self.image_width, 1000)  # Use instance's image_width
 
     def create_key_frame_first_page(self):
+        illustration_image_path = os.path.join(self.video_info_dict['illustration_image_base_path'],f"{self.video_info_dict['index']}.jpeg")
         output_image_name = f"{self.video_info_dict['index']}_key_frame_1"
-        image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
-        draw_config = {
-                'background_color': 'white',
-                'image_size': (self.image_width, self.image_height),
-                'output_path': image_path,
-                'drawing_operations': [
-                    {
-                        'type': 'draw_image',
-                        'image_path': self.header_image_path,
-                        'position': (0, 0),
-                        'size': (self.image_width, -1)
-                    },
-                    {
-                        'type': 'draw_image',
-                        'image_path': self.illustration_image_path,
-                        'position': (0, 250),
-                        'size': (self.image_width, -1)
-                    },
-                    {
-                        'type': 'draw_shape',
-                        'shape': 'rectangle',
-                        'position': (0, 1250),
-                        'size': (1080, 1000),
-                        'fill': 'white'
-                    },
-                    {
-                        'type': 'draw_text',
-                        'text': self.video_info_dict['clean_paragraph'],
-                        'position': (0, 1270),
-                        'font': 'msyhbd',
-                        'font_size': 50,
-                        'fill': 'black',
-                        'text_box_width': self.image_width,
-                        'line_height_ratio': 1.4,
-                        'padding': 70,
-                        'highlighted_words': self.video_info_dict['bold_words']
-                    }
-                ]
-            }
+        output_image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"
+        text = self.video_info_dict['clean_paragraph']
+        highlighted_words = self.video_info_dict['bold_words']
+        draw_config = self.generate_config(output_image_path,illustration_image_path, text, highlighted_words)
+
         image_creator = ImageCreator(draw_config)
         image_path = image_creator.draw()
         return image_path
     
     def create_key_frame_second_page(self):
+        illustration_image_path = os.path.join(self.video_info_dict['illustration_image_base_path'],f"{self.video_info_dict['index']}.jpeg")
         output_image_name = f"{self.video_info_dict['index']}_key_frame_2"
-        image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
-        draw_config = {
-                'background_color': 'white',
-                'image_size': (self.image_width, self.image_height),
-                'output_path': image_path,
-                'drawing_operations': [
-                    {
-                        'type': 'draw_image',
-                        'image_path': self.header_image_path,
-                        'position': (0, 0),
-                        'size': (self.image_width, -1)
-                    },
-                    {
-                        'type': 'draw_image',
-                        'image_path': self.illustration_image_path,
-                        'position': (0, 250),
-                        'size': (self.image_width, -1)
-                    },
-                    {
-                        'type': 'draw_shape',
-                        'shape': 'rectangle',
-                        'position': (0, 1250),
-                        'size': (1080, 1000),
-                        'fill': 'white'
-                    },
-                    {
-                        'type': 'draw_text',
-                        'text': self.video_info_dict['clean_translation'],
-                        'position': (0, 1270),
-                        'font': 'msyhbd',
-                        'font_size': 50,
-                        'fill': 'black',
-                        'text_box_width': self.image_width,
-                        'line_height_ratio': 1.4,
-                        'padding': 70,
-                        'highlighted_words': self.video_info_dict['bold_word_meanings']
-                    }
-                ]
-            }
+        output_image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"
+        text = self.video_info_dict['clean_translation']
+        highlighted_words = self.video_info_dict['bold_word_meanings']
+        draw_config = self.generate_config(output_image_path,illustration_image_path, text, highlighted_words)
+
         image_creator = ImageCreator(draw_config)
         image_path = image_creator.draw()
         return image_path
     
     def create_key_frame_third_page(self):
+        illustration_image_path = os.path.join(self.video_info_dict['illustration_image_base_path'],f"{self.video_info_dict['index']}.jpeg")
         output_image_name = f"{self.video_info_dict['index']}_key_frame_3"
-        image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
+        output_image_path = f"{self.key_frame_output_base_path}\\{output_image_name}.jpeg"  # Use double backslashes for Windows paths
         target_words_and_meanings = self.video_info_dict['target_words_and_meanings']
         multiple_line_string = "\n".join([f"{word}   {meaning}" for word, meaning in target_words_and_meanings])
         highlighted_words = [word for word, meaning in target_words_and_meanings]
-        draw_config = {
+        draw_config = self.generate_config(output_image_path,illustration_image_path, multiple_line_string, highlighted_words)
+
+        image_creator = ImageCreator(draw_config)
+        image_path = image_creator.draw()
+        return image_path
+    
+    def generate_config(self, output_image_path,illustration_image_path, text, highlighted_words):
+        return {
                 'background_color': 'white',
                 'image_size': (self.image_width, self.image_height),
-                'output_path': image_path,
+                'output_path': output_image_path,
                 'drawing_operations': [
                     {
                         'type': 'draw_image',
-                        'image_path': self.header_image_path,
+                        'image_path': self.video_info_dict['header_image_path'],
                         'position': (0, 0),
                         'size': (self.image_width, -1)
                     },
                     {
                         'type': 'draw_image',
-                        'image_path': self.illustration_image_path,
+                        'image_path': illustration_image_path,
                         'position': (0, 250),
                         'size': (self.image_width, -1)
                     },
@@ -163,7 +107,7 @@ class KeyFrameCreator:
                     },
                     {
                         'type': 'draw_text',
-                        'text': multiple_line_string,
+                        'text': text,
                         'position': (0, 1270),
                         'font': 'msyhbd',
                         'font_size': 50,
@@ -175,9 +119,6 @@ class KeyFrameCreator:
                     }
                 ]
             }
-        image_creator = ImageCreator(draw_config)
-        image_path = image_creator.draw()
-        return image_path
 
 # Example usage
 if __name__ == "__main__":
